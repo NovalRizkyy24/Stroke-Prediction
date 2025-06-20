@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prediksi Stroke</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background-color: #e0f2f7;
+            color: #333;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 30px;
+            align-items: stretch; /* Changed to stretch to make items fill height */
+            min-height: 90vh; /* Ensure body takes up at least 90% of viewport height */
+        }
+
+        .sidebar, .container, .prediction-result-right {
+            padding: 20px 30px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            border: 1px solid #b3e5fc;
+        }
+
+        .sidebar {
+            grid-column: 1 / 2;
+            background-color: #bbdefb; /* Different background color for sidebar */
+            display: flex; /* Use flexbox for content alignment */
+            flex-direction: column; /* Stack children vertically */
+        }
+
+        .sidebar p {
+            margin: 0 0 10px 0;
+            color: #01579b;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1; /* Allow the list to grow and push content down */
+        }
+
+        .sidebar ul li {
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .container {
+            grid-column: 2 / 3;
+            max-width: 700px;
+        }
+
+        .prediction-result-right {
+            grid-column: 3 / 4;
+            padding: 25px;
+            background-color: #e0f7fa;
+            border: 1px solid #b2ebf2;
+            color: #00796b;
+            max-width: 350px;
+            text-align: center;
+            display: flex; /* Use flexbox for result content */
+            flex-direction: column;
+            justify-content: center; /* Center content vertically */
+        }
+
+        h1 {
+            text-align: center;
+            color: #0277bd;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: block;
+            color: #01579b;
+            font-size: 0.95em;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: calc(100% - 22px);
+            padding: 12px;
+            border: 1px solid #a7d9ed;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1em;
+            background-color: #eef7fa;
+            color: #333;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            border-color: #03a9f4;
+            box-shadow: 0 0 8px rgba(3, 169, 244, 0.2);
+            outline: none;
+        }
+
+        .form-buttons {
+            grid-column: 1 / 3;
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .form-buttons button {
+            flex: 1;
+            padding: 14px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .form-buttons button[type="submit"] {
+            background-color: #00bcd4;
+            color: white;
+        }
+
+        .form-buttons button[type="submit"]:hover {
+            background-color: #0097a7;
+            transform: translateY(-2px);
+        }
+
+        .form-buttons button[type="reset"] {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        .form-buttons button[type="reset"]:hover {
+            background-color: #f57c00;
+            transform: translateY(-2px);
+        }
+
+        .prediction-text {
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .confidence-text {
+            font-size: 1em;
+            color: #424242;
+            line-height: 1.6;
+        }
+
+        /* Color classes for prediction result */
+        .text-green {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .text-red {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        /* Media queries for responsiveness */
+        @media (max-width: 1200px) {
+            body {
+                grid-template-columns: 1fr 2fr;
+            }
+            .prediction-result-right {
+                grid-column: 1 / 2;
+                margin-top: 30px;
+            }
+            .container {
+                grid-column: 2 / 3;
+            }
+        }
+
+        @media (max-width: 900px) {
+            body {
+                grid-template-columns: 1fr;
+                margin: 20px;
+            }
+            .sidebar, .container, .prediction-result-right {
+                grid-column: 1 / 2;
+                max-width: none;
+            }
+            .sidebar {
+                margin-bottom: 30px;
+            }
+            .prediction-result-right {
+                margin-top: 30px;
+            }
+            form {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <p>Dikembangkan oleh:</p>
+        <ul>
+            <li>152022145 Muhammad Zaki Mahran M.</li>
+            <li>152022154 Mohammad Hafizi</li>
+            <li>152022171 Noval Rizky Nugraha</li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <h1>Sistem Prediksi Risiko Stroke</h1>
+        <form action="/predict" method="post">
+            <div class="form-group">
+                <label for="gender">Jenis Kelamin:</label>
+                <select id="gender" name="gender" required>
+                    <option value="" selected disabled hidden></option>
+                    <option value="Female">Perempuan</option>
+                    <option value="Male">Laki-laki</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="age">Kelompok Usia:</label>
+                <select id="age" name="age" required>
+                    <option value="" selected disabled hidden></option>
+                    <option value="0-18">0-18</option>
+                    <option value="18-36">18-36</option>
+                    <option value="36-54">36-54</option>
+                    <option value="54-72">54-72</option>
+                    <option value="72-90">72-90</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="hypertension">Hipertensi:</label>
+                <select id="hypertension" name="hypertension" required>
+                    <option value="" selected disabled hidden></option>
+                    <option value="0">Tidak</option>
+                    <option value="1">Ya</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="heart_disease">Penyakit Jantung:</label>
+                <select id="heart_disease" name="heart_disease" required>
+                    <option value="" selected disabled hidden></option>
+                    <option value="0">Tidak</option>
+                    <option value="1">Ya</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="ever_married">Status Pernikahan:</label>
+                <select id="ever_married" name="ever_married" required>
+                    <option value="" selected disabled hidden></option>
+                    <option value="No">Belum Menikah</option>
+                    <option value="Yes">Menikah</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="work_type">Tipe Pekerjaan:</label>
+                <select id="work_type" name="work_type" required>
+                    <option value="" selected disabled hidden></option>
+                    <option value="Children">Anak-anak</option>
+                    <option value="Govt_job">Pekerja Pemerintah</option>
+                    <option value="Never_worked">Tidak Pernah Bekerja</option>
+                    <option value="Private">Swasta</option>
+                    <option value="Self-employed">Wiraswasta</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="residence_type">Tempat Tinggal:</label>
+                <select id="residence_type" name="residence_type" required>
+                    <option value="" selected disabled hidden></option>
+                    <option value="Rural">Pedesaan</option>
+                    <option value="Urban">Perkotaan</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="avg_glucose_level">Tingkat Glukosa Rata-rata (55.12 - 271.74):</label>
+                <input type="number" id="avg_glucose_level" name="avg_glucose_level" step="0.01" min="55.12" max="271.74" placeholder="contoh: 68.54" required>
+            </div>
+
+            <div class="form-group">
+                <label for="bmi">Indeks Massa Tubuh (BMI) (10.3 - 43):</label>
+                <input type="number" id="bmi" name="bmi" step="0.01" min="10.3" max="43" placeholder="contoh: 24.50" required>
+            </div>
+
+            <div class="form-group">
+                <label for="smoking_status">Status Merokok:</label>
+                <select id="smoking_status" name="smoking_status" required>
+                    <option value="" selected disabled hidden></option>
+                    <option value="formerly smoked">Dulu Merokok</option>
+                    <option value="never smoked">Tidak Pernah Merokok</option>
+                    <option value="smokes">Merokok</option>
+                    <option value="Unknown">Tidak Diketahui</option>
+                </select>
+            </div>
+
+            <div class="form-buttons">
+                <button type="submit">Prediksi Risiko Stroke</button>
+                <button type="reset">Deteksi Ulang</button>
+            </div>
+        </form>
+    </div>
+
+    {% if prediction_text %}
+        <div class="prediction-result-right">
+            <p class="prediction-text {{ result_color_class }}">{{ prediction_text }}</p>
+            <p class="confidence-text">{{ confidence_stroke }}</p>
+            <p class="confidence-text">{{ confidence_no_stroke }}</p>
+        </div>
+    {% endif %}
+</body>
+</html>
