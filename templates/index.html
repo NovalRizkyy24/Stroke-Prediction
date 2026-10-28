@@ -61,6 +61,33 @@
             z-index: 2;
         }
 
+        .back-link {
+            position: absolute;
+            top: 50%;
+            left: 2rem;
+            transform: translateY(-50%);
+            z-index: 2;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .back-link:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 640px) {
+            .back-link {
+                position: static;
+                transform: none;
+                display: inline-block;
+                margin-bottom: 0.5rem;
+            }
+        }
+
         .page-subtitle {
             font-size: 1.1rem;
             color: rgba(255, 255, 255, 0.9);
@@ -577,6 +604,7 @@
 <body>
     <div class="container">
         <div class="header">
+            <a class="back-link" href="{{ url_for('landing') }}">&larr; Beranda</a>
             <h1 class="page-title">Sistem Prediksi Penyakit Stroke</h1>
         </div>
 
@@ -683,7 +711,7 @@
                             <button class="btn btn-primary" type="submit">
                                 🔍 Analisis Risiko
                             </button>
-                            <button class="btn btn-secondary" type="reset" onclick="window.location.href='/'">
+                            <button class="btn btn-secondary" type="reset" onclick="window.location.href='{{ url_for('home') }}'">
                                 🔄 Reset Form
                             </button>
                         </div>
@@ -726,7 +754,7 @@
 
             {% if metrics %}
             <!-- Evaluasi Model -->
-            <div class="card model-card">
+            <div class="card model-card" id="evaluasi">
                 <h2 class="card-title">Evaluasi Model</h2>
                 <p class="model-summary">
                     Model <strong>{{ metrics.model }}</strong> dilatih pada {{ metrics.n_train }} data pasien dan

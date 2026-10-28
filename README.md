@@ -4,8 +4,11 @@ Aplikasi web untuk skrining awal risiko stroke berdasarkan 10 faktor kesehatan d
 
 > ⚠️ Proyek akademik (Final Project Machine Learning). Hasil prediksi bukan diagnosis medis.
 
+![Beranda StrokeScreen](docs/screenshots/beranda-hero.png)
+
 ## Fitur
 
+- Halaman beranda: tanda-tanda stroke (SeGeRa Ke RS), cara kerja, faktor risiko utama, dan kinerja model
 - Formulir 10 faktor risiko dengan validasi rentang nilai
 - Hasil skrining dengan kode warna (🔴 risiko tinggi / 🟢 risiko rendah)
 - Skor risiko dalam persen beserta batas risiko tinggi (60%)
@@ -80,7 +83,8 @@ Stroke-Prediction/
 │   └── ClassificationModel.ipynb   # Eksplorasi awal (EDA)
 ├── docs/screenshots/       # Tangkapan layar aplikasi
 └── templates/
-    └── index.html
+    ├── landing.html        # Halaman beranda (/)
+    └── index.html          # Formulir skrining & evaluasi model (/prediksi)
 ```
 
 ## Menjalankan Aplikasi
@@ -90,7 +94,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Buka http://127.0.0.1:5000
+Buka http://127.0.0.1:5000 (beranda) atau langsung ke http://127.0.0.1:5000/prediksi (formulir skrining).
 
 ## Melatih Ulang Model
 
@@ -102,6 +106,10 @@ Script menampilkan metrik evaluasi dan menyimpan model, encoder, scaler, serta `
 
 ## Tampilan Aplikasi
 
+**Beranda**
+
+![Beranda lengkap](docs/screenshots/beranda.png)
+
 **Hasil Skrining — Risiko Tinggi**
 
 ![Hasil risiko tinggi](docs/screenshots/hasil-risiko-tinggi.png)
@@ -110,6 +118,6 @@ Script menampilkan metrik evaluasi dan menyimpan model, encoder, scaler, serta `
 
 ![Hasil risiko rendah](docs/screenshots/hasil-risiko-rendah.png)
 
-**Halaman Lengkap dengan Evaluasi Model**
+**Halaman Skrining dengan Evaluasi Model**
 
 ![Halaman utama](docs/screenshots/halaman-utama.png)

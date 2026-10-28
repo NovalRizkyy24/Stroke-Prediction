@@ -74,8 +74,13 @@ def inject_model_metrics():
     return {'metrics': model_metrics}
 
 @app.route('/')
+def landing():
+    """Menampilkan halaman beranda sebelum formulir skrining."""
+    return render_template('landing.html')
+
+@app.route('/prediksi')
 def home():
-    """Menampilkan halaman utama dengan formulir input."""
+    """Menampilkan halaman formulir input."""
     return render_template('index.html', form_data={})
 
 @app.route('/predict', methods=['POST'])

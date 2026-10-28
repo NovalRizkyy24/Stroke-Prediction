@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skrining Risiko Stroke</title>
+    <meta name="description" content="Skrining awal risiko stroke berbasis machine learning dari 10 data kesehatan dasar.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Hallmark · macrostructure: Pulse Narrative (custom) · tone: clinical-editorial, warm · anchor hue: cyan-blue 230
+         * theme: custom (vibe: "denyut klinis, biru tenang, tegas") · paper oklch(98% 0.012 220) · accent oklch(72% 0.13 215)
+         * display: Bricolage Grotesque · body: Inter · axes: light+dark band / grotesk-sans / cool
+         * nav: N5 floating pill · footer: Ft5 statement · enrichment: hand-built SVG pulse line (Tier B)
+         */
+        :root {
+            --color-paper: oklch(98% 0.012 220);
+            --color-paper-2: oklch(95.5% 0.02 220);
+            --color-night: oklch(23% 0.055 250);
+            --color-night-2: oklch(29% 0.065 250);
+            --color-ink: oklch(30% 0.09 250);
+            --color-ink-soft: oklch(47% 0.04 240);
+            --color-on-night: oklch(97% 0.01 220);
+            --color-on-night-soft: oklch(80% 0.03 225);
+            --color-accent: oklch(72% 0.13 215);
+            --color-accent-strong: oklch(56% 0.14 240);
+            --color-accent-wash: oklch(93% 0.04 215);
+            --color-alert: oklch(58% 0.19 25);
+            --color-rule: oklch(88% 0.02 225);
+            --color-rule-night: oklch(40% 0.05 245);
+            --color-focus: oklch(62% 0.17 240);
+
+            --font-display: 'Bricolage Grotesque', 'Inter', system-ui, sans-serif;
+            --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+            --text-sm: 0.875rem;
+            --text-base: 1rem;
+            --text-lg: 1.125rem;
+            --text-xl: 1.375rem;
+            --text-2xl: clamp(1.6rem, 1.2rem + 1.6vw, 2.25rem);
+            --text-3xl: clamp(2rem, 1.3rem + 3vw, 3.5rem);
+            --text-display: clamp(2.6rem, 1.4rem + 5.4vw, 5.75rem);
+            --text-letter: clamp(3rem, 2rem + 4vw, 5rem);
+
+            --space-2xs: 0.25rem;
+            --space-xs: 0.5rem;
+            --space-sm: 0.75rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+            --space-3xl: 4.5rem;
+            --space-4xl: 7rem;
+
+            --radius-sm: 10px;
+            --radius-md: 18px;
+            --radius-pill: 999px;
+
+            --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+            --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+            --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+            --dur-fast: 160ms;
+            --dur-med: 420ms;
+            --dur-pulse: 3.2s;
+
+            --measure: 62ch;
+            --page-max: 1180px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body { overflow-x: clip; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            line-height: 1.6;
+            color: var(--color-ink);
+            background: var(--color-paper);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3 {
+            font-family: var(--font-display);
+            font-style: normal;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            overflow-wrap: anywhere;
+            min-width: 0;
+        }
+
+        a { color: inherit; }
+
+        :focus-visible {
+            outline: 3px solid var(--color-focus);
+            outline-offset: 3px;
+            border-radius: 6px;
+        }
+
+        .wrap {
+            width: 100%;
+            max-width: var(--page-max);
+            margin: 0 auto;
+            padding: 0 var(--space-lg);
+        }
+
+        /* ---------- Nav: floating pill ---------- */
+        .nav {
+            position: fixed;
+            top: var(--space-md);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+            padding: var(--space-xs) var(--space-xs) var(--space-xs) var(--space-lg);
+            background: oklch(23% 0.055 250 / 0.72);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--color-rule-night);
+            border-radius: var(--radius-pill);
+            width: max-content;
+            max-width: calc(100% - 2 * var(--space-md));
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--color-on-night);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .brand svg { flex-shrink: 0; }
+
+        .nav-links {
+            display: flex;
+            gap: var(--space-lg);
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--color-on-night-soft);
+            text-decoration: none;
+            font-size: var(--text-sm);
+            white-space: nowrap;
+            transition: color var(--dur-fast) var(--ease-out);
+        }
+
+        .nav-links a:hover { color: var(--color-on-night); }
+
+        /* ---------- Buttons ---------- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: var(--space-sm) var(--space-lg);
+            border-radius: var(--radius-pill);
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: var(--text-base);
+            text-decoration: none;
+            white-space: nowrap;
+            border: 1.5px solid transparent;
+            cursor: pointer;
+            transition: transform var(--dur-fast) var(--ease-out),
+                        background-color var(--dur-fast) var(--ease-out),
+                        border-color var(--dur-fast) var(--ease-out);
+        }
+
+        .btn:active { transform: translateY(1px) scale(0.98); }
+
+        .btn-primary {
+            background: var(--color-accent);
+            color: var(--color-night);
+        }
+
+        .btn-primary:hover { background: var(--color-on-night); }
+
+        .btn-primary .arrow { transition: transform var(--dur-fast) var(--ease-out); }
+        .btn-primary:hover .arrow { transform: translateX(4px); }
+
+        .btn-ghost {
+            color: var(--color-on-night);
+            border-color: var(--color-rule-night);
+        }
+
+        .btn-ghost:hover { border-color: var(--color-on-night-soft); }
+
+        .btn-small { padding: var(--space-xs) var(--space-md); font-size: var(--text-sm); }
+
+        /* ---------- Hero ---------- */
+        .hero {
+            position: relative;
+            background: var(--color-night);
+            color: var(--color-on-night);
+            padding: calc(var(--space-4xl) + var(--space-xl)) 0 0;
+            overflow: hidden;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+            gap: var(--space-2xl);
+            align-items: end;
+        }
+
+        .hero h1 {
+            font-size: var(--text-display);
+            font-weight: 800;
+            max-width: 12ch;
+        }
+
+        .hero h1 .mark {
+            color: var(--color-accent);
+            background-image: linear-gradient(var(--color-accent), var(--color-accent));
+            background-size: 100% 0.08em;
+            background-position: 0 92%;
+            background-repeat: no-repeat;
+        }
+
+        .hero-lede {
+            margin-top: var(--space-lg);
+            max-width: 46ch;
+            font-size: var(--text-lg);
+            color: var(--color-on-night-soft);
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin-top: var(--space-xl);
+        }
+
+        .hero-aside {
+            border-left: 1px solid var(--color-rule-night);
+            padding-left: var(--space-xl);
+            padding-bottom: var(--space-xs);
+        }
+
+        .hero-aside dt {
+            font-size: var(--text-sm);
+            color: var(--color-on-night-soft);
+        }
+
+        .hero-aside dd {
+            font-family: var(--font-display);
+            font-size: var(--text-3xl);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: var(--space-lg);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .hero-aside dd:last-child { margin-bottom: 0; }
+
+        /* Garis denyut */
+        .pulse {
+            position: relative;
+            margin-top: var(--space-3xl);
+            height: 160px;
+        }
+
+        .pulse svg { width: 100%; height: 100%; display: block; }
+
+        .pulse-base {
+            fill: none;
+            stroke: var(--color-rule-night);
+            stroke-width: 2;
+        }
+
+        .pulse-live {
+            fill: none;
+            stroke: var(--color-accent);
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 260 1740;
+            stroke-dashoffset: 260;
+            animation: trace var(--dur-pulse) linear infinite;
+            filter: drop-shadow(0 0 6px var(--color-accent));
+        }
+
+        @keyframes trace {
+            to { stroke-dashoffset: -1740; }
+        }
+
+        /* ---------- Sections ---------- */
+        section { padding: var(--space-4xl) 0; }
+
+        .section-head {
+            display: grid;
+            gap: var(--space-md);
+            max-width: var(--measure);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .section-head h2 {
+            font-size: var(--text-3xl);
+            font-weight: 800;
+        }
+
+        .section-head p { color: var(--color-ink-soft); font-size: var(--text-lg); }
+
+        /* SeGeRa Ke RS */
+        .signs {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            border-top: 2px solid var(--color-ink);
+        }
+
+        .sign {
+            padding: var(--space-lg) var(--space-md) var(--space-xl) 0;
+            border-right: 1px solid var(--color-rule);
+        }
+
+        .sign + .sign { padding-left: var(--space-md); }
+        .sign:last-child { border-right: 0; }
+
+        .sign-letter {
+            font-family: var(--font-display);
+            font-size: var(--text-letter);
+            font-weight: 800;
+            line-height: 1;
+            color: var(--color-accent-strong);
+        }
+
+        .sign h3 {
+            margin-top: var(--space-sm);
+            font-size: var(--text-lg);
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        .sign p {
+            margin-top: var(--space-2xs);
+            font-size: var(--text-sm);
+            color: var(--color-ink-soft);
+        }
+
+        .signs-note {
+            margin-top: var(--space-lg);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: var(--space-sm) var(--space-lg);
+            padding: var(--space-md) var(--space-lg);
+            background: var(--color-paper-2);
+            border-left: 4px solid var(--color-alert);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            font-size: var(--text-sm);
+        }
+
+        .signs-note strong { color: var(--color-alert); }
+        .signs-note span { color: var(--color-ink-soft); }
+
+        /* Cara kerja — satu alur, bukan tiga kartu */
+        .flow-section { background: var(--color-paper-2); }
+
+        .flow {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: var(--space-xl);
+            position: relative;
+            counter-reset: step;
+        }
+
+        .flow::before {
+            content: '';
+            position: absolute;
+            top: 27px;
+            left: 28px;
+            right: 28px;
+            height: 2px;
+            background: repeating-linear-gradient(90deg, var(--color-accent) 0 10px, transparent 10px 18px);
+        }
+
+        .flow li { position: relative; counter-increment: step; }
+
+        .flow-dot {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: var(--color-night);
+            color: var(--color-accent);
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: var(--text-xl);
+            box-shadow: 0 0 0 6px var(--color-paper-2);
+        }
+
+        .flow-dot::before { content: counter(step); }
+
+        .flow h3 {
+            margin-top: var(--space-lg);
+            font-size: var(--text-xl);
+            font-weight: 700;
+        }
+
+        .flow p {
+            margin-top: var(--space-xs);
+            color: var(--color-ink-soft);
+            max-width: 32ch;
+        }
+
+        /* Faktor risiko */
+        .factors-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+            gap: var(--space-3xl);
+            align-items: start;
+        }
+
+        .factor-list { list-style: none; display: grid; gap: var(--space-lg); }
+
+        .factor-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: var(--space-md);
+            margin-bottom: var(--space-xs);
+        }
+
+        .factor-name {
+            font-family: var(--font-display);
+            font-size: var(--text-xl);
+            font-weight: 700;
+        }
+
+        .factor-value {
+            font-size: var(--text-sm);
+            color: var(--color-ink-soft);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .factor-track {
+            height: 14px;
+            border-radius: 4px;
+            background: var(--color-accent-wash);
+            overflow: hidden;
+        }
+
+        .factor-bar {
+            height: 100%;
+            border-radius: 4px;
+            background: var(--color-accent-strong);
+            transform-origin: left;
+            transform: scaleX(var(--w));
+            transition: transform 900ms var(--ease-out);
+        }
+
+        .js .factor-list:not(.is-visible) .factor-bar { transform: scaleX(0); }
+
+        .factor-note {
+            margin-top: var(--space-lg);
+            font-size: var(--text-sm);
+            color: var(--color-ink-soft);
+        }
+
+        /* Kinerja model */
+        .proof {
+            background: var(--color-night);
+            color: var(--color-on-night);
+        }
+
+        .proof .section-head p { color: var(--color-on-night-soft); }
+
+        .proof-row {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            border-top: 1px solid var(--color-rule-night);
+        }
+
+        .proof-item {
+            padding: var(--space-xl) var(--space-lg) var(--space-xl) 0;
+        }
+
+        .proof-item + .proof-item {
+            padding-left: var(--space-lg);
+            border-left: 1px solid var(--color-rule-night);
+        }
+
+        .proof-num {
+            font-family: var(--font-display);
+            font-size: var(--text-3xl);
+            font-weight: 800;
+            color: var(--color-accent);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .proof-label {
+            margin-top: var(--space-xs);
+            color: var(--color-on-night-soft);
+            font-size: var(--text-sm);
+        }
+
+        .proof-foot {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: var(--space-lg);
+            margin-top: var(--space-xl);
+            padding-top: var(--space-xl);
+            border-top: 1px solid var(--color-rule-night);
+            color: var(--color-on-night-soft);
+            font-size: var(--text-sm);
+        }
+
+        .proof-foot p { max-width: 70ch; }
+
+        .text-link {
+            color: var(--color-accent);
+            font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
+            background-image: linear-gradient(currentColor, currentColor);
+            background-size: 0 1.5px;
+            background-position: 0 100%;
+            background-repeat: no-repeat;
+            transition: background-size var(--dur-med) var(--ease-out);
+        }
+
+        .text-link:hover { background-size: 100% 1.5px; }
+
+        /* Penutup */
+        .closing { padding: var(--space-4xl) 0 var(--space-3xl); }
+
+        .closing h2 {
+            font-size: var(--text-display);
+            font-weight: 800;
+            max-width: 14ch;
+        }
+
+        .closing h2 .mark { color: var(--color-accent-strong); }
+
+        .closing-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-xl);
+            margin-top: var(--space-2xl);
+        }
+
+        .closing .btn-primary {
+            background: var(--color-night);
+            color: var(--color-on-night);
+            padding: var(--space-md) var(--space-xl);
+            font-size: var(--text-lg);
+        }
+
+        .closing .btn-primary:hover { background: var(--color-accent-strong); }
+
+        .disclaimer {
+            max-width: 52ch;
+            font-size: var(--text-sm);
+            color: var(--color-ink-soft);
+        }
+
+        footer {
+            border-top: 1px solid var(--color-rule);
+            padding: var(--space-lg) 0 var(--space-xl);
+            font-size: var(--text-sm);
+            color: var(--color-ink-soft);
+        }
+
+        footer .wrap {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: var(--space-sm);
+        }
+
+        /* Reveal saat scroll */
+        .reveal {
+            transition: opacity var(--dur-med) var(--ease-out), transform var(--dur-med) var(--ease-out);
+        }
+
+        .js .reveal:not(.is-visible) {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 960px) {
+            .hero-grid,
+            .factors-grid { grid-template-columns: minmax(0, 1fr); }
+
+            .hero-aside {
+                border-left: 0;
+                border-top: 1px solid var(--color-rule-night);
+                padding: var(--space-lg) 0 0;
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: var(--space-md);
+            }
+
+            .hero-aside div { min-width: 0; }
+            .hero-aside dd { font-size: var(--text-2xl); margin-bottom: 0; }
+
+            .signs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .sign:nth-child(3) { border-right: 0; }
+            .sign:nth-child(4) { padding-left: 0; }
+            .sign:nth-child(n + 4) { border-top: 1px solid var(--color-rule); }
+
+            .proof-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .proof-item:nth-child(3) { padding-left: 0; border-left: 0; }
+            .proof-item:nth-child(n + 3) { border-top: 1px solid var(--color-rule-night); }
+
+            .factors-grid { gap: var(--space-2xl); }
+        }
+
+        @media (max-width: 640px) {
+            section { padding: var(--space-3xl) 0; }
+            .wrap { padding: 0 var(--space-md); }
+
+            .nav { gap: var(--space-sm); padding-left: var(--space-md); }
+            .nav-links { display: none; }
+
+            .hero { padding-top: calc(var(--space-3xl) + var(--space-xl)); }
+            .hero-aside { grid-template-columns: minmax(0, 1fr); }
+            .hero-aside div { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-md); }
+            .pulse { height: 110px; margin-top: var(--space-2xl); }
+
+            .signs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .sign, .sign + .sign { padding: var(--space-md) var(--space-sm) var(--space-lg) 0; }
+            .sign:nth-child(even) { padding-left: var(--space-md); border-right: 0; }
+            .sign:nth-child(odd) { border-right: 1px solid var(--color-rule); }
+            .sign:nth-child(3) { border-right: 1px solid var(--color-rule); }
+            .sign:nth-child(4) { padding-left: var(--space-md); }
+            .sign:nth-child(n + 3) { border-top: 1px solid var(--color-rule); }
+
+            .flow { grid-template-columns: minmax(0, 1fr); gap: var(--space-xl); }
+            .flow::before {
+                top: 28px;
+                bottom: 28px;
+                left: 27px;
+                right: auto;
+                width: 2px;
+                height: auto;
+                background: repeating-linear-gradient(180deg, var(--color-accent) 0 10px, transparent 10px 18px);
+            }
+            .flow li { padding-left: calc(56px + var(--space-lg)); min-height: 56px; }
+            .flow-dot { position: absolute; left: 0; top: 0; }
+            .flow h3 { margin-top: var(--space-xs); }
+
+            .proof-row { grid-template-columns: minmax(0, 1fr); }
+            .proof-item, .proof-item + .proof-item {
+                padding: var(--space-lg) 0;
+                border-left: 0;
+                border-top: 1px solid var(--color-rule-night);
+            }
+            .proof-row { border-top: 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .pulse-live { animation: none; stroke-dasharray: none; stroke-dashoffset: 0; }
+            .reveal, .factor-bar { transition: opacity 150ms linear; }
+            .js .reveal:not(.is-visible) { transform: none; }
+            .js .factor-list:not(.is-visible) .factor-bar { transform: scaleX(var(--w)); }
+            .btn, .btn-primary .arrow, .text-link { transition: none; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav" aria-label="Navigasi utama">
+        <a class="brand" href="{{ url_for('landing') }}">
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2 12h4l2-5 4 10 3-7 2 2h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            StrokeScreen
+        </a>
+        <ul class="nav-links">
+            <li><a href="#tanda">Tanda Stroke</a></li>
+            <li><a href="#cara-kerja">Cara Kerja</a></li>
+            <li><a href="#model">Model</a></li>
+        </ul>
+        <a class="btn btn-primary btn-small" href="{{ url_for('home') }}">Mulai Skrining</a>
+    </nav>
+
+    <header class="hero">
+        <div class="wrap">
+            <div class="hero-grid">
+                <div>
+                    <h1>Kenali risiko stroke <span class="mark">lebih awal.</span></h1>
+                    <p class="hero-lede">
+                        Isi sepuluh data kesehatan dasar, dan model machine learning akan memperkirakan
+                        apakah risiko stroke Anda tergolong tinggi atau rendah &mdash; dalam hitungan detik.
+                    </p>
+                    <div class="hero-actions">
+                        <a class="btn btn-primary" href="{{ url_for('home') }}">Mulai Skrining <span class="arrow" aria-hidden="true">&rarr;</span></a>
+                        <a class="btn btn-ghost" href="#cara-kerja">Lihat cara kerja</a>
+                    </div>
+                </div>
+
+                <dl class="hero-aside">
+                    <div>
+                        <dt>Data kesehatan yang diisi</dt>
+                        <dd>10 faktor</dd>
+                    </div>
+                    {% if metrics %}
+                    <div>
+                        <dt>Data pasien untuk melatih model</dt>
+                        <dd>{{ "{:,}".format(metrics.n_train + metrics.n_test).replace(",", ".") }}</dd>
+                    </div>
+                    <div>
+                        <dt>Kasus stroke yang terdeteksi saat uji</dt>
+                        <dd>{{ "%.0f"|format(metrics.recall * 100) }}%</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+
+        <div class="pulse" aria-hidden="true">
+            <svg viewBox="0 0 1000 160" preserveAspectRatio="none">
+                <path class="pulse-base" d="M0 90 H180 l18 -10 l14 10 H300 l14 26 l20 -96 l22 120 l16 -50 H460 l20 -12 l16 12 H640 l14 26 l20 -96 l22 120 l16 -50 H820 l20 -12 l16 12 H1000"/>
+                <path class="pulse-live" pathLength="2000" d="M0 90 H180 l18 -10 l14 10 H300 l14 26 l20 -96 l22 120 l16 -50 H460 l20 -12 l16 12 H640 l14 26 l20 -96 l22 120 l16 -50 H820 l20 -12 l16 12 H1000"/>
+            </svg>
+        </div>
+    </header>
+
+    <main>
+        <section id="tanda">
+            <div class="wrap">
+                <div class="section-head reveal">
+                    <h2>Kenali tandanya, SeGeRa Ke RS.</h2>
+                    <p>Model ini memperkirakan risiko jangka panjang. Jika gejala di bawah muncul tiba-tiba, itu keadaan darurat &mdash; jangan menunggu hasil skrining.</p>
+                </div>
+
+                <div class="signs reveal">
+                    <div class="sign">
+                        <div class="sign-letter" aria-hidden="true">Se</div>
+                        <h3>Senyum tidak simetris</h3>
+                        <p>Wajah mencong atau tertarik ke satu sisi.</p>
+                    </div>
+                    <div class="sign">
+                        <div class="sign-letter" aria-hidden="true">Ge</div>
+                        <h3>Gerak melemah</h3>
+                        <p>Lengan atau tungkai sebelah tiba-tiba lemah.</p>
+                    </div>
+                    <div class="sign">
+                        <div class="sign-letter" aria-hidden="true">Ra</div>
+                        <h3>BicaRa pelo</h3>
+                        <p>Bicara tidak jelas atau sulit dipahami.</p>
+                    </div>
+                    <div class="sign">
+                        <div class="sign-letter" aria-hidden="true">Ke</div>
+                        <h3>Kebas</h3>
+                        <p>Mati rasa atau kesemutan di satu sisi tubuh.</p>
+                    </div>
+                    <div class="sign">
+                        <div class="sign-letter" aria-hidden="true">R</div>
+                        <h3>Rabun</h3>
+                        <p>Pandangan kabur atau gelap mendadak.</p>
+                    </div>
+                    <div class="sign">
+                        <div class="sign-letter" aria-hidden="true">S</div>
+                        <h3>Sakit kepala hebat</h3>
+                        <p>Nyeri hebat mendadak, sering disertai pusing.</p>
+                    </div>
+                </div>
+
+                <p class="signs-note reveal">
+                    <strong>Muncul tiba-tiba? Segera ke rumah sakit atau hubungi 119.</strong>
+                    <span>Sumber: kampanye SeGeRa Ke RS, Kementerian Kesehatan RI.</span>
+                </p>
+            </div>
+        </section>
+
+        <section id="cara-kerja" class="flow-section">
+            <div class="wrap">
+                <div class="section-head reveal">
+                    <h2>Tiga langkah, tanpa daftar akun.</h2>
+                    <p>Data Anda hanya dipakai untuk menghitung skor saat itu juga dan tidak disimpan.</p>
+                </div>
+
+                <ol class="flow reveal">
+                    <li>
+                        <span class="flow-dot" aria-hidden="true"></span>
+                        <h3>Isi data kesehatan</h3>
+                        <p>Usia, riwayat hipertensi dan penyakit jantung, kadar glukosa, BMI, hingga status merokok.</p>
+                    </li>
+                    <li>
+                        <span class="flow-dot" aria-hidden="true"></span>
+                        <h3>Model menghitung skor</h3>
+                        <p>Logistic Regression menimbang tiap faktor sesuai pola dari ribuan data pasien.</p>
+                    </li>
+                    <li>
+                        <span class="flow-dot" aria-hidden="true"></span>
+                        <h3>Baca hasilnya</h3>
+                        <p>Anda mendapat kategori risiko tinggi atau rendah beserta skornya. Bawa hasilnya saat konsultasi.</p>
+                    </li>
+                </ol>
+            </div>
+        </section>
+
+        {% if metrics %}
+        <section id="faktor">
+            <div class="wrap factors-grid">
+                <div class="section-head reveal">
+                    <h2>Apa yang paling menentukan?</h2>
+                    <p>
+                        Dari sepuluh faktor, empat inilah yang paling menaikkan skor risiko menurut model.
+                        Usia memberi pengaruh jauh lebih besar dibanding faktor lainnya.
+                    </p>
+                </div>
+
+                {% set top = metrics.features | rejectattr('nominal') | selectattr('coef', 'gt', 0) | list %}
+                {% set top_max = top[0].coef if top else 1 %}
+                <div>
+                    <ol class="factor-list" data-observe>
+                        {% for feature in top[:4] %}
+                        <li>
+                            <div class="factor-top">
+                                <span class="factor-name">{{ feature.label }}</span>
+                                <span class="factor-value">bobot {{ "%.2f"|format(feature.coef) }}</span>
+                            </div>
+                            <div class="factor-track">
+                                <div class="factor-bar" style="--w: {{ '%.3f'|format(feature.coef / top_max) }}"></div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ol>
+                    <p class="factor-note">Bobot = koefisien model Logistic Regression setelah normalisasi data.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="model" class="proof">
+            <div class="wrap">
+                <div class="section-head reveal">
+                    <h2>Diuji dengan data yang belum pernah dilihat.</h2>
+                    <p>
+                        Model dievaluasi pada {{ "{:,}".format(metrics.n_test).replace(",", ".") }} data pasien baru
+                        ({{ metrics.n_test_stroke }} kasus stroke) dengan proporsi asli, bukan data yang disetel agar terlihat bagus.
+                    </p>
+                </div>
+
+                <div class="proof-row reveal">
+                    <div class="proof-item">
+                        <div class="proof-num">{{ "%.0f"|format(metrics.recall * 100) }}%</div>
+                        <div class="proof-label">kasus stroke terdeteksi ({{ metrics.confusion_matrix.tp }} dari {{ metrics.n_test_stroke }})</div>
+                    </div>
+                    <div class="proof-item">
+                        <div class="proof-num">{{ "%.3f"|format(metrics.roc_auc) }}</div>
+                        <div class="proof-label">ROC-AUC &mdash; kemampuan membedakan pasien stroke dan sehat</div>
+                    </div>
+                    <div class="proof-item">
+                        <div class="proof-num">{{ "%.1f"|format(metrics.precision_lift) }}&times;</div>
+                        <div class="proof-label">lebih tepat dibanding tebakan acak saat menandai risiko tinggi</div>
+                    </div>
+                    <div class="proof-item">
+                        <div class="proof-num">{{ metrics.comparison | length }}</div>
+                        <div class="proof-label">algoritma dibandingkan sebelum model dipilih</div>
+                    </div>
+                </div>
+
+                <div class="proof-foot reveal">
+                    <p>Data stroke hanya sekitar {{ "%.0f"|format(metrics.prevalence * 100) }}% dari keseluruhan, sehingga model diatur untuk lebih banyak menangkap kasus stroke dengan konsekuensi adanya alarm palsu.</p>
+                    <a class="text-link" href="{{ url_for('home') }}#evaluasi">Lihat evaluasi lengkap &rarr;</a>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="closing">
+            <div class="wrap">
+                <h2 class="reveal">Satu menit untuk <span class="mark">mengenal risiko Anda.</span></h2>
+                <div class="closing-row reveal">
+                    <a class="btn btn-primary" href="{{ url_for('home') }}">Mulai Skrining <span class="arrow" aria-hidden="true">&rarr;</span></a>
+                    <p class="disclaimer">
+                        Hasil skrining bukan diagnosis medis. Gunakan sebagai bahan diskusi dengan dokter,
+                        bukan pengganti pemeriksaan.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="wrap">
+            <span>StrokeScreen &middot; Final Project Machine Learning</span>
+            <span>Dataset: Stroke Prediction Dataset (Kaggle)</span>
+        </div>
+    </footer>
+
+    <script>
+        // Animasi muncul saat scroll; tanpa JavaScript semua konten tetap tampil
+        document.documentElement.classList.add('js');
+        const targets = document.querySelectorAll('.reveal, [data-observe]');
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+            targets.forEach((el) => observer.observe(el));
+        } else {
+            targets.forEach((el) => el.classList.add('is-visible'));
+        }
+    </script>
+</body>
+</html>
