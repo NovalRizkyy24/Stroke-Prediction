@@ -1,0 +1,56 @@
+{
+  "model": "Logistic Regression",
+  "params": {
+    "C": 0.1,
+    "class_weight": "balanced"
+  },
+  "threshold": 0.6,
+  "n_train": 4087,
+  "n_test": 1022,
+  "n_test_stroke": 50,
+  "recall": 0.76,
+  "precision": 0.17757009345794392,
+  "f1": 0.2878787878787879,
+  "roc_auc": 0.8351440329218107,
+  "cv_roc_auc": 0.8326138017590459,
+  "confusion_matrix": {
+    "tn": 796,
+    "fp": 176,
+    "fn": 12,
+    "tp": 38
+  },
+  "coefficients": {
+    "age": 3.829,
+    "avg_glucose_level": 0.915,
+    "hypertension": 0.723,
+    "heart_disease": 0.449,
+    "ever_married": 0.215,
+    "Residence_type": 0.185,
+    "bmi": 0.053,
+    "smoking_status": 0.032,
+    "work_type": -0.074,
+    "gender": -0.084
+  },
+  "comparison": [
+    {
+      "model": "Gradient Boosting",
+      "cv_roc_auc": 0.8352904638091013,
+      "selected": false
+    },
+    {
+      "model": "SVC (linear)",
+      "cv_roc_auc": 0.8352379705336004,
+      "selected": false
+    },
+    {
+      "model": "Logistic Regression",
+      "cv_roc_auc": 0.8326138017590459,
+      "selected": true
+    },
+    {
+      "model": "Random Forest",
+      "cv_roc_auc": 0.830296087918196,
+      "selected": false
+    }
+  ]
+}

@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prediksi Stroke</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -247,12 +248,225 @@
             border-radius: 8px;
         }
 
-        .text-success {
-            color: #00c851;
+        .text-green {
+            color: #2e7d32;
         }
 
-        .text-danger {
-            color: #ff3547;
+        .text-red {
+            color: #c62828;
+        }
+
+        /* Evaluasi Model */
+        .model-card {
+            grid-column: 1 / -1;
+        }
+
+        .model-summary {
+            color: #546e7a;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-top: -0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-tile {
+            background: #f5fbfd;
+            border: 1px solid #e0f2f7;
+            border-radius: 14px;
+            padding: 1.25rem;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #546e7a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #01579b;
+            margin: 0.25rem 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .metric-desc {
+            font-size: 0.85rem;
+            color: #607d8b;
+            line-height: 1.5;
+        }
+
+        .model-detail {
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 2rem;
+        }
+
+        .section-subtitle {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #01579b;
+            margin-bottom: 0.25rem;
+        }
+
+        .section-note {
+            font-size: 0.85rem;
+            color: #607d8b;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .cm-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 4px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .cm-table th {
+            font-weight: 500;
+            color: #546e7a;
+            padding: 0.5rem;
+        }
+
+        .cm-table td {
+            padding: 0.9rem 0.5rem;
+            border-radius: 10px;
+            background: #f5fbfd;
+            color: #37474f;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .cm-table td strong {
+            display: block;
+            font-size: 1.4rem;
+            color: #01579b;
+        }
+
+        .cm-table td.cm-correct {
+            background: #e0f2f7;
+        }
+
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .feature-row {
+            display: grid;
+            grid-template-columns: 140px 1fr 52px;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+            color: #37474f;
+            padding: 2px 0;
+        }
+
+        .feature-row:hover .feature-bar {
+            filter: brightness(1.15);
+        }
+
+        .feature-track {
+            height: 12px;
+            background: #eef6f9;
+            border-radius: 4px;
+        }
+
+        .feature-bar {
+            height: 100%;
+            min-width: 4px;
+            border-radius: 4px;
+            background: #0288d1;
+        }
+
+        .feature-bar.negative {
+            background: #90a4ae;
+        }
+
+        .feature-bar.nominal {
+            background: repeating-linear-gradient(45deg, #b0bec5 0 3px, #cfd8dc 3px 6px);
+        }
+
+        .feature-value {
+            text-align: right;
+            color: #546e7a;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .feature-footnote {
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: #607d8b;
+            line-height: 1.5;
+        }
+
+        .comparison {
+            margin-top: 2rem;
+        }
+
+        .comparison-table {
+            width: 100%;
+            max-width: 560px;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .comparison-table th {
+            text-align: left;
+            font-weight: 500;
+            color: #546e7a;
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid #e0f2f7;
+        }
+
+        .comparison-table td {
+            padding: 0.6rem 0.75rem;
+            color: #37474f;
+            border-bottom: 1px solid #f0f7fa;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .comparison-table th:last-child,
+        .comparison-table td:last-child {
+            text-align: right;
+        }
+
+        .comparison-table tr.selected td {
+            background: #f5fbfd;
+            font-weight: 600;
+            color: #01579b;
+        }
+
+        .badge {
+            display: inline-block;
+            margin-left: 0.4rem;
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+            background: #0288d1;
+            color: #ffffff;
+            font-size: 0.7rem;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+
+        .model-footnote {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(0, 188, 212, 0.1);
+            font-size: 0.85rem;
+            color: #607d8b;
+            line-height: 1.6;
         }
 
         .placeholder-text {
@@ -262,6 +476,7 @@
         }
 
         .developer-section {
+            display: none;
             margin-top: auto;
             padding-top: 1.5rem;
             border-top: 1px solid rgba(0, 188, 212, 0.1);
@@ -309,6 +524,10 @@
             .button-group {
                 flex-direction: column;
             }
+
+            .model-detail {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 640px) {
@@ -331,6 +550,10 @@
             .card {
                 padding: 1.25rem;
                 border-radius: 16px;
+            }
+
+            .feature-row {
+                grid-template-columns: 110px 1fr 48px;
             }
         }
 
@@ -500,7 +723,142 @@
                     </div>
                 </div>
             </div>
+
+            {% if metrics %}
+            <!-- Evaluasi Model -->
+            <div class="card model-card">
+                <h2 class="card-title">Evaluasi Model</h2>
+                <p class="model-summary">
+                    Model <strong>{{ metrics.model }}</strong> dilatih pada {{ metrics.n_train }} data pasien dan
+                    diuji pada {{ metrics.n_test }} data baru ({{ metrics.n_test_stroke }} kasus stroke) dengan
+                    proporsi asli. Pasien dikategorikan <strong>risiko tinggi</strong> jika skor risiko
+                    &ge; {{ "%.0f"|format(metrics.threshold * 100) }}%.
+                </p>
+
+                <div class="metric-grid">
+                    <div class="metric-tile">
+                        <div class="metric-label">Recall</div>
+                        <div class="metric-value">{{ "%.1f"|format(metrics.recall * 100) }}%</div>
+                        <div class="metric-desc">Kasus stroke yang berhasil terdeteksi ({{ metrics.confusion_matrix.tp }} dari {{ metrics.n_test_stroke }})</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-label">ROC-AUC</div>
+                        <div class="metric-value">{{ "%.3f"|format(metrics.roc_auc) }}</div>
+                        <div class="metric-desc">Kemampuan membedakan pasien stroke dan sehat (1.0 = sempurna, 0.5 = acak). Validasi silang: {{ "%.3f"|format(metrics.cv_roc_auc) }}</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-label">Precision</div>
+                        <div class="metric-value">{{ "%.1f"|format(metrics.precision * 100) }}%</div>
+                        <div class="metric-desc">Pasien berisiko tinggi yang benar-benar stroke &mdash; &asymp;{{ "%.1f"|format(metrics.precision_lift) }}&times; rata-rata populasi ({{ "%.1f"|format(metrics.prevalence * 100) }}%)</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-label">F1-Score</div>
+                        <div class="metric-value">{{ "%.3f"|format(metrics.f1) }}</div>
+                        <div class="metric-desc">Keseimbangan antara recall dan precision</div>
+                    </div>
+                </div>
+
+                <div class="model-detail">
+                    <div>
+                        <h3 class="section-subtitle">Confusion Matrix</h3>
+                        <p class="section-note">Hasil prediksi pada data uji.</p>
+                        <table class="cm-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Diprediksi<br>Risiko Tinggi</th>
+                                    <th>Diprediksi<br>Risiko Rendah</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th>Stroke</th>
+                                    <td class="cm-correct"><strong>{{ metrics.confusion_matrix.tp }}</strong>terdeteksi</td>
+                                    <td><strong>{{ metrics.confusion_matrix.fn }}</strong>terlewat</td>
+                                </tr>
+                                <tr>
+                                    <th>Sehat</th>
+                                    <td><strong>{{ metrics.confusion_matrix.fp }}</strong>alarm palsu</td>
+                                    <td class="cm-correct"><strong>{{ metrics.confusion_matrix.tn }}</strong>benar</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div>
+                        <h3 class="section-subtitle">Pengaruh Faktor Risiko</h3>
+                        <p class="section-note">Koefisien model: makin panjang batang, makin besar pengaruhnya. Batang abu-abu sedikit menurunkan risiko.</p>
+                        <div class="feature-list">
+                            {% for feature in metrics.features %}
+                            {% if feature.nominal %}
+                            <div class="feature-row" title="{{ feature.label }}: kategori tanpa urutan, arah koefisien tidak dapat ditafsirkan">
+                                <span>{{ feature.label }}*</span>
+                                <div class="feature-track">
+                                    <div class="feature-bar nominal" style="width: {{ '%.1f'|format(feature.width) }}%"></div>
+                                </div>
+                                <span class="feature-value">{{ "%.2f"|format(feature.coef|abs) }}*</span>
+                            </div>
+                            {% else %}
+                            <div class="feature-row" title="{{ feature.label }}: koefisien {{ '%+.3f'|format(feature.coef) }} ({{ 'menaikkan' if feature.coef > 0 else 'menurunkan' }} risiko)">
+                                <span>{{ feature.label }}</span>
+                                <div class="feature-track">
+                                    <div class="feature-bar{% if feature.coef < 0 %} negative{% endif %}" style="width: {{ '%.1f'|format(feature.width) }}%"></div>
+                                </div>
+                                <span class="feature-value">{{ "%+.2f"|format(feature.coef) }}</span>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if metrics.features | selectattr('nominal') | list %}
+                        <p class="feature-footnote">* Kategori tanpa urutan (mis. jenis pekerjaan), sehingga hanya besar pengaruhnya yang ditampilkan; arah naik/turunnya tidak dapat ditafsirkan.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if metrics.comparison %}
+                <div class="comparison">
+                    <h3 class="section-subtitle">Perbandingan Algoritma</h3>
+                    <p class="section-note">
+                        Semua algoritma diuji dengan validasi silang 5-fold yang sama. Selisih ROC-AUC terbesar hanya
+                        {{ "%.3f"|format(metrics.comparison_spread) }}, sehingga hasilnya setara. {{ metrics.model }}
+                        dipilih karena paling sederhana, probabilitasnya konsisten, dan pengaruh tiap faktor dapat dijelaskan.
+                    </p>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Algoritma</th>
+                                <th>ROC-AUC (validasi silang)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in metrics.comparison %}
+                            <tr{% if row.selected %} class="selected"{% endif %}>
+                                <td>{{ row.model }}{% if row.selected %} <span class="badge">Dipilih</span>{% endif %}</td>
+                                <td>{{ "%.3f"|format(row.cv_roc_auc) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+
+                <p class="model-footnote">
+                    Data stroke hanya sekitar 5% dari seluruh data, sehingga model diatur untuk lebih banyak menangkap
+                    kasus stroke (recall tinggi) dengan konsekuensi adanya alarm palsu. Aplikasi ini adalah alat skrining
+                    awal untuk tujuan edukasi, bukan pengganti diagnosis dokter.
+                </p>
+            </div>
+            {% endif %}
         </div>
     </div>
+
+    <script>
+        // Mengisi kembali formulir dengan input terakhir setelah prediksi
+        const formData = {{ (form_data or {}) | tojson }};
+        Object.entries(formData).forEach(([name, value]) => {
+            const field = document.querySelector(`[name="${name}"]`);
+            if (field) field.value = value;
+        });
+    </script>
 </body>
 </html>
